@@ -156,6 +156,30 @@ decode_integer!(u128);
 #[cfg(feature = "ethnum")]
 decode_integer!(ethnum::U256);
 
+#[cfg(feature = "ethereum-types")]
+mod ethereum_types_support {
+    use super::*;
+    use ethereum_types::*;
+
+    macro_rules! fixed_hash_impl {
+        ($t:ty) => {
+            impl Decodable for $t {
+                fn decode(buf: &mut &[u8]) -> Result<Self, DecodeError> {
+                    Decodable::decode(buf).map(Self)
+                }
+            }
+        };
+    }
+
+    fixed_hash_impl!(H64);
+    fixed_hash_impl!(H128);
+    fixed_hash_impl!(H160);
+    fixed_hash_impl!(H256);
+    fixed_hash_impl!(H512);
+    fixed_hash_impl!(H520);
+    fixed_hash_impl!(Bloom);
+}
+
 impl<const N: usize> Decodable for [u8; N] {
     fn decode(from: &mut &[u8]) -> Result<Self, DecodeError> {
         let h = Header::decode(from)?;
