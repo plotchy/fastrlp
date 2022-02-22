@@ -1,0 +1,19 @@
+[package]
+name = "fastrlp-derive"
+version = "0.1.0"
+license = "Apache-2.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+bytes = { version = "1", default-features = false }
+syn = "1"
+quote = "1"
+proc-macro2 = "1"
+
+[dev-dependencies]
+ethnum = "1"
+fastrlp = { version = "0.1", path = "..", features = ["ethnum"] }
+hex-literal = "0.3"

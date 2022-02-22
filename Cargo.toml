@@ -8,16 +8,25 @@ license = "Apache-2.0"
 bytes = { version = "1", default-features = false }
 ethnum = { version = "1", default-features = false, optional = true }
 ethereum-types = { version = "0.13", default-features = false, optional = true }
+fastrlp-derive = { version = "0.1", path = "fastrlp-derive", optional = true }
 
 [dev-dependencies]
-fastrlp-test = { path = ".", package = "fastrlp", features = ["std", "ethnum", "ethereum-types"] }
+fastrlp-test = { path = ".", package = "fastrlp", features = [
+    "std",
+    "ethnum",
+    "ethereum-types",
+] }
 criterion = "0.3"
 hex-literal = "0.3"
 
 [features]
 alloc = []
+derive = ["fastrlp-derive"]
 std = ["alloc"]
 
 [[bench]]
 name = "bench"
 harness = false
+
+[workspace]
+members = ["fastrlp-derive"]
