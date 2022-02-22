@@ -1,4 +1,5 @@
 use crate::types::Header;
+use arrayvec::ArrayVec;
 use bytes::{BufMut, Bytes, BytesMut};
 use core::borrow::Borrow;
 
@@ -26,7 +27,7 @@ impl Header {
     }
 }
 
-pub fn length_of_length(payload_length: usize) -> usize {
+pub const fn length_of_length(payload_length: usize) -> usize {
     if payload_length < 56 {
         1
     } else {
@@ -36,6 +37,41 @@ pub fn length_of_length(payload_length: usize) -> usize {
 
 pub const EMPTY_STRING_CODE: u8 = 0x80;
 pub const EMPTY_LIST_CODE: u8 = 0xC0;
+
+#[doc(hidden)]
+pub const fn const_add(a: usize, b: usize) -> usize {
+    a + b
+}
+
+#[doc(hidden)]
+pub unsafe trait MaxEncodedLen<const LEN: usize>: Encodable {}
+
+#[doc(hidden)]
+pub unsafe trait MaxEncodedLenAssoc: Encodable {
+    const LEN: usize;
+}
+
+/// Use this to define length of an encoded entity
+///
+/// # Safety
+/// Invalid value can cause the encoder to crash.
+#[macro_export]
+macro_rules! impl_max_encoded_len {
+    ($t:ty, $len:block) => {
+        unsafe impl MaxEncodedLen<{ $len }> for $t {}
+        unsafe impl MaxEncodedLenAssoc for $t {
+            const LEN: usize = $len;
+        }
+    };
+}
+
+// impl<T, const LEN: usize> MaxEncodedLen<LEN> for T where T: MaxEncodedLenAssoc<LEN = LEN> {}
+// impl<T, const LEN: usize> MaxEncodedLenAssoc for T
+// where
+//     T: MaxEncodedLen<LEN>,
+// {
+//     const LEN: usize = LEN;
+// }
 
 pub trait Encodable {
     fn length(&self) -> usize;
@@ -101,13 +137,34 @@ macro_rules! encodable_uint {
     };
 }
 
+macro_rules! max_encoded_len_uint {
+    ($t:ty) => {
+        impl_max_encoded_len!($t, { 1 + <$t>::MAX.to_be_bytes().len() });
+    };
+}
+
 encodable_uint!(u8);
+max_encoded_len_uint!(u8);
+
 encodable_uint!(u16);
+max_encoded_len_uint!(u16);
+
 encodable_uint!(u32);
+max_encoded_len_uint!(u32);
+
 encodable_uint!(u64);
+max_encoded_len_uint!(u64);
+
 encodable_uint!(u128);
+max_encoded_len_uint!(u128);
+
 #[cfg(feature = "ethnum")]
-encodable_uint!(ethnum::U256);
+mod ethnum_support {
+    use super::*;
+
+    encodable_uint!(ethnum::U256);
+    impl_max_encoded_len!(ethnum::U256, { 1 + 32 });
+}
 
 #[cfg(feature = "ethereum-types")]
 mod ethereum_types_support {
@@ -125,6 +182,9 @@ mod ethereum_types_support {
                     self.0.encode(out)
                 }
             }
+            impl_max_encoded_len!($t, {
+                length_of_length(<$t>::len_bytes()) + <$t>::len_bytes()
+            });
         };
     }
 
@@ -194,6 +254,19 @@ where
     for x in v {
         x.borrow().encode(out);
     }
+}
+
+pub fn encode_fixed_size<E: MaxEncodedLen<LEN>, const LEN: usize>(v: &E) -> ArrayVec<u8, LEN> {
+    let mut out = ArrayVec::from([0_u8; LEN]);
+
+    let mut s = out.as_mut_slice();
+
+    v.encode(&mut s);
+
+    let final_len = LEN - s.len();
+    out.truncate(final_len);
+
+    out
 }
 
 #[cfg(test)]

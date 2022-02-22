@@ -14,13 +14,20 @@ mod de;
 mod en;
 
 use de::impl_decodable;
-use en::impl_encodable;
+use en::{impl_encodable, impl_max_encoded_len};
 use proc_macro::TokenStream;
 
 #[proc_macro_derive(RlpEncodable, attributes(rlp))]
 pub fn encodable(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     let gen = impl_encodable(&ast);
+    gen.into()
+}
+
+#[proc_macro_derive(RlpMaxEncodedLen, attributes(rlp))]
+pub fn max_encoded_len(input: TokenStream) -> TokenStream {
+    let ast = syn::parse(input).unwrap();
+    let gen = impl_max_encoded_len(&ast);
     gen.into()
 }
 

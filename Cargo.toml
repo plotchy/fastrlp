@@ -5,6 +5,7 @@ edition = "2021"
 license = "Apache-2.0"
 
 [dependencies]
+arrayvec = { version = "0.7", default-features = false }
 bytes = { version = "1", default-features = false }
 ethnum = { version = "1", default-features = false, optional = true }
 ethereum-types = { version = "0.13", default-features = false, optional = true }
