@@ -143,6 +143,9 @@ macro_rules! max_encoded_len_uint {
     };
 }
 
+encodable_uint!(usize);
+max_encoded_len_uint!(usize);
+
 encodable_uint!(u8);
 max_encoded_len_uint!(u8);
 

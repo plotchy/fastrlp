@@ -148,6 +148,7 @@ macro_rules! decode_integer {
     };
 }
 
+decode_integer!(usize);
 decode_integer!(u8);
 decode_integer!(u16);
 decode_integer!(u32);
