@@ -109,6 +109,10 @@ impl<const LEN: usize> Encodable for [u8; LEN] {
     }
 }
 
+unsafe impl<const LEN: usize> MaxEncodedLenAssoc for [u8; LEN] {
+    const LEN: usize = LEN + length_of_length(LEN);
+}
+
 macro_rules! encodable_uint {
     ($t:ty) => {
         #[allow(clippy::cmp_owned)]
@@ -139,7 +143,9 @@ macro_rules! encodable_uint {
 
 macro_rules! max_encoded_len_uint {
     ($t:ty) => {
-        impl_max_encoded_len!($t, { 1 + <$t>::MAX.to_be_bytes().len() });
+        impl_max_encoded_len!($t, {
+            length_of_length(<$t>::MAX.to_be_bytes().len()) + <$t>::MAX.to_be_bytes().len()
+        });
     };
 }
 
@@ -166,7 +172,7 @@ mod ethnum_support {
     use super::*;
 
     encodable_uint!(ethnum::U256);
-    impl_max_encoded_len!(ethnum::U256, { 1 + 32 });
+    impl_max_encoded_len!(ethnum::U256, { length_of_length(32) + 32 });
 }
 
 #[cfg(feature = "ethereum-types")]
