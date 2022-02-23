@@ -7,6 +7,8 @@ mod decode;
 mod encode;
 mod types;
 
+pub use bytes::BufMut;
+
 pub use decode::{Decodable, DecodeError};
 pub use encode::{
     const_add, encode_fixed_size, encode_list, length_of_length, list_length, Encodable,

@@ -45,7 +45,6 @@ pub fn impl_decodable(ast: &syn::DeriveInput) -> TokenStream {
 
     quote! {
         const _: () = {
-            extern crate bytes;
             extern crate fastrlp;
             #impl_block
         };
@@ -77,7 +76,6 @@ pub fn impl_decodable_wrapper(ast: &syn::DeriveInput) -> TokenStream {
 
     quote! {
         const _: () = {
-            extern crate bytes;
             extern crate fastrlp;
             #impl_block
         };
