@@ -18,4 +18,6 @@ pub use types::Header;
 pub use decode::decode_list;
 
 #[cfg(feature = "derive")]
-pub use fastrlp_derive::{RlpDecodable, RlpEncodable, RlpMaxEncodedLen};
+pub use fastrlp_derive::{
+    RlpDecodable, RlpDecodableWrapper, RlpEncodable, RlpEncodableWrapper, RlpMaxEncodedLen,
+};

@@ -1,7 +1,6 @@
 use bytes::{Bytes, BytesMut};
 use ethnum::U256;
-use fastrlp::{Decodable, Encodable};
-use fastrlp_derive::{RlpDecodable, RlpEncodable, RlpMaxEncodedLen};
+use fastrlp::*;
 use hex_literal::hex;
 
 #[derive(Debug, PartialEq, RlpEncodable, RlpDecodable)]
@@ -16,6 +15,9 @@ struct Test4Numbers {
     c: U256,
     d: U256,
 }
+
+#[derive(Debug, PartialEq, RlpEncodableWrapper, RlpDecodableWrapper)]
+pub struct W(Test4Numbers);
 
 fn encoded<T: Encodable>(t: &T) -> BytesMut {
     let mut out = BytesMut::new();
@@ -54,6 +56,9 @@ fn test_encode_item() {
     let out = fastrlp::encode_fixed_size(&item);
     assert_eq!(&*out, expected);
 
-    let decoded = Decodable::decode(&mut &*expected).expect("decode failure");
+    let decoded = Decodable::decode(&mut &*expected).unwrap();
     assert_eq!(item, decoded);
+
+    assert_eq!(encoded(&W(item)), expected);
+    assert_eq!(W::decode(&mut &*expected).unwrap().0, decoded);
 }

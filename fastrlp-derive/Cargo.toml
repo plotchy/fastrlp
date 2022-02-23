@@ -15,5 +15,5 @@ proc-macro2 = "1"
 
 [dev-dependencies]
 ethnum = "1"
-fastrlp = { version = "0.1", path = "..", features = ["ethnum"] }
+fastrlp = { version = "0.1", path = "..", features = ["derive", "ethnum"] }
 hex-literal = "0.3"

@@ -13,14 +13,21 @@ extern crate proc_macro;
 mod de;
 mod en;
 
-use de::impl_decodable;
-use en::{impl_encodable, impl_max_encoded_len};
+use de::*;
+use en::*;
 use proc_macro::TokenStream;
 
 #[proc_macro_derive(RlpEncodable, attributes(rlp))]
 pub fn encodable(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     let gen = impl_encodable(&ast);
+    gen.into()
+}
+
+#[proc_macro_derive(RlpEncodableWrapper, attributes(rlp))]
+pub fn encodable_wrapper(input: TokenStream) -> TokenStream {
+    let ast = syn::parse(input).unwrap();
+    let gen = impl_encodable_wrapper(&ast);
     gen.into()
 }
 
@@ -35,5 +42,12 @@ pub fn max_encoded_len(input: TokenStream) -> TokenStream {
 pub fn decodable(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     let gen = impl_decodable(&ast);
+    gen.into()
+}
+
+#[proc_macro_derive(RlpDecodableWrapper, attributes(rlp))]
+pub fn decodable_wrapper(input: TokenStream) -> TokenStream {
+    let ast = syn::parse(input).unwrap();
+    let gen = impl_decodable_wrapper(&ast);
     gen.into()
 }

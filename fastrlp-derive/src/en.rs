@@ -57,6 +57,45 @@ pub fn impl_encodable(ast: &syn::DeriveInput) -> TokenStream {
     }
 }
 
+pub fn impl_encodable_wrapper(ast: &syn::DeriveInput) -> TokenStream {
+    let body = if let syn::Data::Struct(s) = &ast.data {
+        s
+    } else {
+        panic!("#[derive(RlpEncodableWrapper)] is only defined for structs.");
+    };
+
+    let ident = {
+        let fields: Vec<_> = body.fields.iter().collect();
+        if fields.len() == 1 {
+            let field = fields.first().expect("fields.len() == 1; qed");
+            field_ident(0, field)
+        } else {
+            panic!("#[derive(RlpEncodableWrapper)] is only defined for structs with one field.")
+        }
+    };
+
+    let name = &ast.ident;
+
+    let impl_block = quote! {
+        impl fastrlp::Encodable for #name {
+            fn length(&self) -> usize {
+                self.#ident.length()
+            }
+            fn encode(&self, out: &mut dyn bytes::BufMut) {
+                self.#ident.encode(out)
+            }
+        }
+    };
+
+    quote! {
+        const _: () = {
+            extern crate bytes;
+            extern crate fastrlp;
+            #impl_block
+        };
+    }
+}
+
 pub fn impl_max_encoded_len(ast: &syn::DeriveInput) -> TokenStream {
     let body = if let syn::Data::Struct(s) = &ast.data {
         s
@@ -88,13 +127,17 @@ pub fn impl_max_encoded_len(ast: &syn::DeriveInput) -> TokenStream {
     }
 }
 
-fn encodable_length(index: usize, field: &syn::Field) -> TokenStream {
-    let ident = if let Some(ident) = &field.ident {
+fn field_ident(index: usize, field: &syn::Field) -> TokenStream {
+    if let Some(ident) = &field.ident {
         quote! { #ident }
     } else {
         let index = syn::Index::from(index);
         quote! { #index }
-    };
+    }
+}
+
+fn encodable_length(index: usize, field: &syn::Field) -> TokenStream {
+    let ident = field_ident(index, field);
 
     quote! { rlp_head.payload_length += fastrlp::Encodable::length(&self.#ident); }
 }
@@ -110,12 +153,7 @@ fn encodable_max_length(index: usize, field: &syn::Field) -> TokenStream {
 }
 
 fn encodable_field(index: usize, field: &syn::Field) -> TokenStream {
-    let ident = if let Some(ident) = &field.ident {
-        quote! { #ident }
-    } else {
-        let index = syn::Index::from(index);
-        quote! { #index }
-    };
+    let ident = field_ident(index, field);
 
     let id = quote! { self.#ident };
 

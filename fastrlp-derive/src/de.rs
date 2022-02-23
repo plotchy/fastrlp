@@ -52,6 +52,38 @@ pub fn impl_decodable(ast: &syn::DeriveInput) -> TokenStream {
     }
 }
 
+pub fn impl_decodable_wrapper(ast: &syn::DeriveInput) -> TokenStream {
+    let body = if let syn::Data::Struct(s) = &ast.data {
+        s
+    } else {
+        panic!("#[derive(RlpEncodableWrapper)] is only defined for structs.");
+    };
+
+    assert_eq!(
+        body.fields.iter().count(),
+        1,
+        "#[derive(RlpEncodableWrapper)] is only defined for structs with one field."
+    );
+
+    let name = &ast.ident;
+
+    let impl_block = quote! {
+        impl fastrlp::Decodable for #name {
+            fn decode(buf: &mut &[u8]) -> Result<Self, fastrlp::DecodeError> {
+                Ok(Self(fastrlp::Decodable::decode(buf)?))
+            }
+        }
+    };
+
+    quote! {
+        const _: () = {
+            extern crate bytes;
+            extern crate fastrlp;
+            #impl_block
+        };
+    }
+}
+
 fn decodable_field(index: usize, field: &syn::Field) -> TokenStream {
     let id = if let Some(ident) = &field.ident {
         quote! { #ident }
