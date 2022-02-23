@@ -154,6 +154,17 @@ decode_integer!(u16);
 decode_integer!(u32);
 decode_integer!(u64);
 decode_integer!(u128);
+
+impl Decodable for bool {
+    fn decode(buf: &mut &[u8]) -> Result<Self, DecodeError> {
+        Ok(match u8::decode(buf)? {
+            0 => false,
+            1 => true,
+            _ => return Err(DecodeError::Custom("invalid bool value, must be 0 or 1")),
+        })
+    }
+}
+
 #[cfg(feature = "ethnum")]
 decode_integer!(ethnum::U256);
 

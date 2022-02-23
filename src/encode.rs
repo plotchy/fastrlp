@@ -162,6 +162,18 @@ max_encoded_len_uint!(u64);
 encodable_uint!(u128);
 max_encoded_len_uint!(u128);
 
+impl Encodable for bool {
+    fn length(&self) -> usize {
+        (*self as u8).length()
+    }
+
+    fn encode(&self, out: &mut dyn BufMut) {
+        (*self as u8).encode(out)
+    }
+}
+
+impl_max_encoded_len!(bool, { <u8 as MaxEncodedLenAssoc>::LEN });
+
 #[cfg(feature = "ethnum")]
 mod ethnum_support {
     use super::*;
