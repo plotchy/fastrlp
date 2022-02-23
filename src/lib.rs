@@ -16,9 +16,6 @@ pub use encode::{
 };
 pub use types::Header;
 
-#[cfg(feature = "alloc")]
-pub use decode::decode_list;
-
 #[cfg(feature = "derive")]
 pub use fastrlp_derive::{
     RlpDecodable, RlpDecodableWrapper, RlpEncodable, RlpEncodableWrapper, RlpMaxEncodedLen,

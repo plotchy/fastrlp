@@ -217,14 +217,27 @@ macro_rules! slice_impl {
 
 #[cfg(feature = "alloc")]
 mod alloc_support {
+    use super::*;
+
     extern crate alloc;
 
-    slice_impl!(alloc::vec::Vec<u8>);
+    impl<T> Encodable for ::alloc::vec::Vec<T>
+    where
+        T: Encodable,
+    {
+        fn length(&self) -> usize {
+            list_length(self)
+        }
+
+        fn encode(&self, out: &mut dyn BufMut) {
+            encode_list(self, out)
+        }
+    }
 }
 slice_impl!(Bytes);
 slice_impl!(BytesMut);
 
-fn rlp_header<E, K>(v: &[K]) -> Header
+fn rlp_list_header<E, K>(v: &[K]) -> Header
 where
     E: Encodable,
     K: Borrow<E>,
@@ -244,7 +257,7 @@ where
     E: Encodable,
     K: Borrow<E>,
 {
-    let payload_length = rlp_header(v).payload_length;
+    let payload_length = rlp_list_header(v).payload_length;
     length_of_length(payload_length) + payload_length
 }
 
@@ -253,7 +266,7 @@ where
     E: Encodable,
     K: Borrow<E>,
 {
-    let h = rlp_header(v);
+    let h = rlp_list_header(v);
     h.encode(out);
     for x in v {
         x.borrow().encode(out);
@@ -288,10 +301,18 @@ mod tests {
         out
     }
 
-    fn encoded_list<T: Encodable>(t: &[T]) -> BytesMut {
-        let mut out = BytesMut::new();
-        encode_list(t, &mut out);
-        out
+    fn encoded_list<T: Encodable + Clone>(t: &[T]) -> BytesMut {
+        let mut out1 = BytesMut::new();
+        encode_list(t, &mut out1);
+
+        let v = t.to_vec();
+        assert_eq!(out1.len(), v.length());
+
+        let mut out2 = BytesMut::new();
+        v.encode(&mut out2);
+        assert_eq!(out1, out2);
+
+        out1
     }
 
     #[test]

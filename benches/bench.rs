@@ -63,7 +63,7 @@ fn bench_decode(c: &mut Criterion) {
         let mut data = BytesMut::new();
         fastrlp::encode_list(input.as_slice(), &mut data);
         b.iter(|| {
-            let _: Vec<u64> = fastrlp::decode_list(&mut &data[..]).unwrap();
+            let _ = Vec::<u64>::decode(&mut &data[..]).unwrap();
         });
     });
 }

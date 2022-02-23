@@ -220,22 +220,27 @@ impl Decodable for Bytes {
 }
 
 #[cfg(feature = "alloc")]
-pub fn decode_list<E: Decodable>(from: &mut &[u8]) -> Result<alloc::vec::Vec<E>, DecodeError> {
-    let h = Header::decode(from)?;
-    if !h.list {
-        return Err(DecodeError::UnexpectedString);
+impl<E> Decodable for alloc::vec::Vec<E>
+where
+    E: Decodable,
+{
+    fn decode(buf: &mut &[u8]) -> Result<Self, DecodeError> {
+        let h = Header::decode(buf)?;
+        if !h.list {
+            return Err(DecodeError::UnexpectedString);
+        }
+
+        let payload_view = &mut &buf[..h.payload_length];
+
+        let mut to = alloc::vec::Vec::new();
+        while !payload_view.is_empty() {
+            to.push(E::decode(payload_view)?);
+        }
+
+        buf.advance(h.payload_length);
+
+        Ok(to)
     }
-
-    let payload_view = &mut &from[..h.payload_length];
-
-    let mut to = alloc::vec::Vec::new();
-    while !payload_view.is_empty() {
-        to.push(E::decode(payload_view)?);
-    }
-
-    from.advance(h.payload_length);
-
-    Ok(to)
 }
 
 #[cfg(test)]
@@ -267,7 +272,7 @@ mod tests {
         IT: IntoIterator<Item = (Result<alloc::vec::Vec<T>, DecodeError>, &'static [u8])>,
     {
         for (expected, mut input) in fixtures {
-            assert_eq!(decode_list(&mut input), expected);
+            assert_eq!(vec::Vec::<T>::decode(&mut input), expected);
             if expected.is_ok() {
                 assert_eq!(input, &[]);
             }
