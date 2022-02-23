@@ -1,5 +1,6 @@
 use crate::types::Header;
 use arrayvec::ArrayVec;
+use auto_impl::auto_impl;
 use bytes::{BufMut, Bytes, BytesMut};
 use core::borrow::Borrow;
 
@@ -65,14 +66,8 @@ macro_rules! impl_max_encoded_len {
     };
 }
 
-// impl<T, const LEN: usize> MaxEncodedLen<LEN> for T where T: MaxEncodedLenAssoc<LEN = LEN> {}
-// impl<T, const LEN: usize> MaxEncodedLenAssoc for T
-// where
-//     T: MaxEncodedLen<LEN>,
-// {
-//     const LEN: usize = LEN;
-// }
-
+#[auto_impl(&)]
+#[cfg_attr(feature = "alloc", auto_impl(Box, Arc))]
 pub trait Encodable {
     fn length(&self) -> usize;
     fn encode(&self, out: &mut dyn BufMut);
