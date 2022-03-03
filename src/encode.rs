@@ -1,4 +1,4 @@
-use crate::types::Header;
+use crate::types::*;
 use arrayvec::ArrayVec;
 use auto_impl::auto_impl;
 use bytes::{BufMut, Bytes, BytesMut};
@@ -35,9 +35,6 @@ pub const fn length_of_length(payload_length: usize) -> usize {
         1 + 8 - payload_length.leading_zeros() as usize / 8
     }
 }
-
-pub const EMPTY_STRING_CODE: u8 = 0x80;
-pub const EMPTY_LIST_CODE: u8 = 0xC0;
 
 #[doc(hidden)]
 pub const fn const_add(a: usize, b: usize) -> usize {

@@ -14,7 +14,7 @@ pub use encode::{
     const_add, encode_fixed_size, encode_list, length_of_length, list_length, Encodable,
     MaxEncodedLen, MaxEncodedLenAssoc,
 };
-pub use types::Header;
+pub use types::*;
 
 #[cfg(feature = "derive")]
 pub use fastrlp_derive::{
