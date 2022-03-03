@@ -15,9 +15,10 @@ pub fn impl_decodable(ast: &syn::DeriveInput) -> TokenStream {
         .map(|(i, field)| decodable_field(i, field))
         .collect();
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     let impl_block = quote! {
-        impl fastrlp::Decodable for #name {
+        impl #impl_generics fastrlp::Decodable for #name #ty_generics #where_clause {
             fn decode(buf: &mut &[u8]) -> Result<Self, fastrlp::DecodeError> {
                 let rlp_head = fastrlp::Header::decode(buf)?;
 
@@ -65,9 +66,10 @@ pub fn impl_decodable_wrapper(ast: &syn::DeriveInput) -> TokenStream {
     );
 
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     let impl_block = quote! {
-        impl fastrlp::Decodable for #name {
+        impl #impl_generics fastrlp::Decodable for #name #ty_generics #where_clause {
             fn decode(buf: &mut &[u8]) -> Result<Self, fastrlp::DecodeError> {
                 Ok(Self(fastrlp::Decodable::decode(buf)?))
             }

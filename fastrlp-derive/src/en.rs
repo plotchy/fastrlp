@@ -22,13 +22,14 @@ pub fn impl_encodable(ast: &syn::DeriveInput) -> TokenStream {
         .map(|(i, field)| encodable_field(i, field))
         .collect();
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     let impl_block = quote! {
         trait E {
             fn rlp_header(&self) -> fastrlp::Header;
         }
 
-        impl E for #name {
+        impl #impl_generics E for #name #ty_generics #where_clause {
             fn rlp_header(&self) -> fastrlp::Header {
                 let mut rlp_head = fastrlp::Header { list: true, payload_length: 0 };
                 #(#length_stmts)*
@@ -36,7 +37,7 @@ pub fn impl_encodable(ast: &syn::DeriveInput) -> TokenStream {
             }
         }
 
-        impl fastrlp::Encodable for #name {
+        impl #impl_generics fastrlp::Encodable for #name #ty_generics #where_clause {
             fn length(&self) -> usize {
                 let rlp_head = E::rlp_header(self);
                 return fastrlp::length_of_length(rlp_head.payload_length) + rlp_head.payload_length;
@@ -74,9 +75,10 @@ pub fn impl_encodable_wrapper(ast: &syn::DeriveInput) -> TokenStream {
     };
 
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     let impl_block = quote! {
-        impl fastrlp::Encodable for #name {
+        impl #impl_generics fastrlp::Encodable for #name #ty_generics #where_clause {
             fn length(&self) -> usize {
                 self.#ident.length()
             }

@@ -19,6 +19,14 @@ struct Test4Numbers {
 #[derive(Debug, PartialEq, RlpEncodableWrapper, RlpDecodableWrapper)]
 pub struct W(Test4Numbers);
 
+#[derive(Debug, PartialEq, RlpEncodable)]
+struct Test4NumbersGenerics<'a, D: Encodable> {
+    a: u8,
+    b: u64,
+    c: &'a U256,
+    d: &'a D,
+}
+
 fn encoded<T: Encodable>(t: &T) -> BytesMut {
     let mut out = BytesMut::new();
     t.encode(&mut out);
@@ -58,6 +66,16 @@ fn test_encode_item() {
 
     let decoded = Decodable::decode(&mut &*expected).unwrap();
     assert_eq!(item, decoded);
+
+    assert_eq!(
+        encoded(&Test4NumbersGenerics {
+            a: item.a,
+            b: item.b,
+            c: &item.c,
+            d: &item.d
+        }),
+        expected
+    );
 
     assert_eq!(encoded(&W(item)), expected);
     assert_eq!(W::decode(&mut &*expected).unwrap().0, decoded);
