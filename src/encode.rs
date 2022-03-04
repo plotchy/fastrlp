@@ -66,8 +66,12 @@ macro_rules! impl_max_encoded_len {
 #[auto_impl(&)]
 #[cfg_attr(feature = "alloc", auto_impl(Box, Arc))]
 pub trait Encodable {
-    fn length(&self) -> usize;
     fn encode(&self, out: &mut dyn BufMut);
+    fn length(&self) -> usize {
+        let mut out = BytesMut::new();
+        self.encode(&mut out);
+        out.len()
+    }
 }
 
 impl<'a> Encodable for &'a [u8] {
