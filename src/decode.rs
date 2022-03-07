@@ -5,6 +5,29 @@ pub trait Decodable: Sized {
     fn decode(buf: &mut &[u8]) -> Result<Self, DecodeError>;
 }
 
+#[cfg(feature = "alloc")]
+mod alloc_impl {
+    use super::*;
+
+    impl<T> Decodable for ::alloc::boxed::Box<T>
+    where
+        T: Decodable + Sized,
+    {
+        fn decode(buf: &mut &[u8]) -> Result<Self, DecodeError> {
+            T::decode(buf).map(::alloc::boxed::Box::new)
+        }
+    }
+
+    impl<T> Decodable for ::alloc::sync::Arc<T>
+    where
+        T: Decodable + Sized,
+    {
+        fn decode(buf: &mut &[u8]) -> Result<Self, DecodeError> {
+            T::decode(buf).map(::alloc::sync::Arc::new)
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum DecodeError {
     Overflow,
