@@ -19,6 +19,28 @@ pub enum DecodeError {
     Custom(&'static str),
 }
 
+#[cfg(feature = "std")]
+impl std::error::Error for DecodeError {}
+
+impl core::fmt::Display for DecodeError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            DecodeError::Overflow => write!(f, "overflow"),
+            DecodeError::LeadingZero => write!(f, "leading zero"),
+            DecodeError::InputTooShort => write!(f, "input too short"),
+            DecodeError::NonCanonicalSingleByte => write!(f, "non-canonical single byte"),
+            DecodeError::NonCanonicalSize => write!(f, "non-canonical size"),
+            DecodeError::UnexpectedLength => write!(f, "unexpected length"),
+            DecodeError::UnexpectedString => write!(f, "unexpected string"),
+            DecodeError::UnexpectedList => write!(f, "unexpected list"),
+            DecodeError::ListLengthMismatch { expected, got } => {
+                write!(f, "list length mismatch: expected {expected}, got {got}")
+            }
+            DecodeError::Custom(err) => write!(f, "{err}"),
+        }
+    }
+}
+
 impl Header {
     pub fn decode(buf: &mut &[u8]) -> Result<Self, DecodeError> {
         if !buf.has_remaining() {
