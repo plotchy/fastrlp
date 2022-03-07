@@ -261,7 +261,7 @@ slice_impl!(BytesMut);
 
 fn rlp_list_header<E, K>(v: &[K]) -> Header
 where
-    E: Encodable,
+    E: Encodable + ?Sized,
     K: Borrow<E>,
 {
     let mut h = Header {
@@ -285,7 +285,7 @@ where
 
 pub fn encode_list<E, K>(v: &[K], out: &mut dyn BufMut)
 where
-    E: Encodable,
+    E: Encodable + ?Sized,
     K: Borrow<E>,
 {
     let h = rlp_list_header(v);
