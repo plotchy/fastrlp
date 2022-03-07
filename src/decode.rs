@@ -26,6 +26,20 @@ mod alloc_impl {
             T::decode(buf).map(::alloc::sync::Arc::new)
         }
     }
+
+    impl Decodable for ::alloc::string::String {
+        fn decode(from: &mut &[u8]) -> Result<Self, DecodeError> {
+            let h = Header::decode(from)?;
+            if h.list {
+                return Err(DecodeError::UnexpectedList);
+            }
+            let mut to = ::alloc::vec::Vec::with_capacity(h.payload_length);
+            to.extend_from_slice(&from[..h.payload_length]);
+            from.advance(h.payload_length);
+
+            Self::from_utf8(to).map_err(|_| DecodeError::Custom("invalid string"))
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]

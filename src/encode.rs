@@ -246,6 +246,15 @@ mod alloc_support {
             encode_list(self, out)
         }
     }
+
+    impl Encodable for ::alloc::string::String {
+        fn encode(&self, out: &mut dyn BufMut) {
+            self.as_bytes().encode(out);
+        }
+        fn length(&self) -> usize {
+            self.as_bytes().length()
+        }
+    }
 }
 slice_impl!(Bytes);
 slice_impl!(BytesMut);
