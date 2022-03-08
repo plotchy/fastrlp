@@ -67,6 +67,13 @@ fn test_encode_item() {
     let decoded = Decodable::decode(&mut &*expected).unwrap();
     assert_eq!(item, decoded);
 
+    let mut rlp_view = Rlp::new(&*expected).unwrap();
+    assert_eq!(rlp_view.get_next().unwrap(), Some(item.a));
+    assert_eq!(rlp_view.get_next().unwrap(), Some(item.b));
+    assert_eq!(rlp_view.get_next().unwrap(), Some(item.c));
+    assert_eq!(rlp_view.get_next().unwrap(), Some(item.d));
+    assert_eq!(rlp_view.get_next::<Bytes>().unwrap(), None);
+
     assert_eq!(
         encoded(&Test4NumbersGenerics {
             a: item.a,
