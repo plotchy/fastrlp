@@ -289,6 +289,30 @@ impl Decodable for Bytes {
     }
 }
 
+pub struct Rlp<'a> {
+    payload_view: &'a [u8],
+}
+
+impl<'a> Rlp<'a> {
+    pub fn new(mut payload: &'a [u8]) -> Result<Self, DecodeError> {
+        let h = Header::decode(&mut payload)?;
+        if !h.list {
+            return Err(DecodeError::UnexpectedString);
+        }
+
+        let payload_view = &payload[..h.payload_length];
+        Ok(Self { payload_view })
+    }
+
+    pub fn get_next<T: Decodable>(&mut self) -> Result<Option<T>, DecodeError> {
+        if self.payload_view.is_empty() {
+            return Ok(None);
+        }
+
+        Ok(Some(T::decode(&mut self.payload_view)?))
+    }
+}
+
 #[cfg(feature = "alloc")]
 impl<E> Decodable for alloc::vec::Vec<E>
 where
