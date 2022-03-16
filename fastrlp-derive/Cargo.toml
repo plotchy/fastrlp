@@ -3,6 +3,8 @@ name = "fastrlp-derive"
 version = "0.1.0"
 license = "Apache-2.0"
 edition = "2021"
+description = "Procedural macros for fastrlp"
+repository = "https://github.com/vorot93/fastrlp"
 
 [lib]
 proc-macro = true

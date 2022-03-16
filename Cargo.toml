@@ -3,6 +3,8 @@ name = "fastrlp"
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
+description = "Fast RLP serialization library"
+repository = "https://github.com/vorot93/fastrlp"
 
 [dependencies]
 arrayvec = { version = "0.7", default-features = false }
