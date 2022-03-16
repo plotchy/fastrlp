@@ -16,6 +16,7 @@ fastrlp-derive = { version = "0.1", path = "fastrlp-derive", optional = true }
 
 [dev-dependencies]
 fastrlp-test = { path = ".", package = "fastrlp", features = [
+    "derive",
     "std",
     "ethnum",
     "ethereum-types",

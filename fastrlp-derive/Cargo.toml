@@ -14,8 +14,3 @@ bytes = { version = "1", default-features = false }
 syn = "1"
 quote = "1"
 proc-macro2 = "1"
-
-[dev-dependencies]
-ethnum = "1"
-fastrlp = { version = "0.1", path = "..", features = ["derive", "ethnum"] }
-hex-literal = "0.3"
