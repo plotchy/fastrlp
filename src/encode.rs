@@ -212,6 +212,45 @@ mod ethereum_types_support {
     fixed_hash_impl!(H512);
     fixed_hash_impl!(H520);
     fixed_hash_impl!(Bloom);
+
+    macro_rules! int_impl {
+        ($t:ty) => {
+            impl Encodable for $t {
+                #[allow(clippy::cmp_owned)]
+                fn length(&self) -> usize {
+                    if *self < <$t>::from(EMPTY_STRING_CODE) {
+                        1
+                    } else {
+                        1 + (std::mem::size_of::<$t>()) - (self.leading_zeros() as usize / 8)
+                    }
+                }
+
+                fn encode(&self, out: &mut dyn bytes::BufMut) {
+                    if self.is_zero() {
+                        out.put_u8(EMPTY_STRING_CODE);
+                    } else if *self < <$t>::from(EMPTY_STRING_CODE) {
+                        out.put_u8(u8::try_from(*self).unwrap());
+                    } else {
+                        // TODO
+                        let mut be = [0; 32];
+                        self.to_big_endian(&mut be);
+                        let be = zeroless_view(&be);
+                        out.put_u8(EMPTY_STRING_CODE + be.len() as u8);
+                        out.put_slice(be);
+                    }
+                }
+            }
+        }
+    }
+
+    int_impl!(U64);
+    impl_max_encoded_len!(U64, { length_of_length(8) + 8 });
+    int_impl!(U128);
+    impl_max_encoded_len!(U128, { length_of_length(16) + 16 });
+    int_impl!(U256);
+    impl_max_encoded_len!(U256, { length_of_length(32) + 32 });
+    int_impl!(U512);
+    impl_max_encoded_len!(U512, { length_of_length(64) + 64 });
 }
 
 macro_rules! slice_impl {
